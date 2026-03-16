@@ -1,0 +1,40 @@
+# LS.bag GitHub Actions Workflow
+# For n8n integration - to be triggered after n8n setup
+
+name: LS.bag CI/CD
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: |
+          npm install
+          
+      - name: Run tests
+        run: |
+          npm test
+
+  deploy-n8n:
+    needs: test
+    if: false  # Disabled until n8n is ready
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to n8n
+        run: |
+          echo "n8n deployment will be configured here"
