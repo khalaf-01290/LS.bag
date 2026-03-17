@@ -1,0 +1,65 @@
+{
+  "name": "تقرير الصباح - LS.bag",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1440
+            }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "جدول يومي 8AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3001/api/ai/chat",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "أنشئ تقرير صباح简短 للسوق:\n1. مبيعات yesterday\n2. مخزون منخفض\n3. ترندات اليوم\nأجب بالعربي النجدي"
+            },
+            {
+              "name": "model",
+              "value": "gemini"
+            }
+          ]
+        }
+      },
+      "id": "ai_report",
+      "name": "توليد التقرير",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "text": "={{$json.body.response}}",
+        "additionalFields": {}
+      },
+      "id": "telegram",
+      "name": "إرسال للتليجرام",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "جدول يومي 8AM": {
+      "main": [[{"node": "توليد التقرير", "type": "main", "index": 0}]]
+    },
+    "توليد التقرير": {
+      "main": [[{"node": "إرسال للتليجرام", "type": "main", "index": 0}]]
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "name": "تنبيهات المخزون - LS.bag",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "فحص كل ساعة",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3001/api/data/inventory",
+        "method": "GET"
+      },
+      "id": "check_inventory",
+      "name": "فحص المخزون",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.data[0].quantity}}",
+              "operation": "lt",
+              "value2": 5
+            }
+          ]
+        }
+      },
+      "id": "if_low",
+      "name": "إذا المخزون منخفض",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1.2,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "text": "🔴 تنبيه مخزون!\n\nالمنتج: {{$json.data[0].name}}\nالكمية المتبقية: {{$json.data[0].quantity}}\n\n-action required",
+        "additionalFields": {}
+      },
+      "id": "alert",
+      "name": "إرسال تنبيه",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1000, 250]
+    }
+  ],
+  "connections": {
+    "فحص كل ساعة": {
+      "main": [[{"node": "فحص المخزون", "type": "main", "index": 0}]]
+    },
+    "فحص المخزون": {
+      "main": [[{"node": "إذا المخزون منخفض", "type": "main", "index": 0}]]
+    },
+    "إذا المخزون منخفض": {
+      "true": [[{"node": "إرسال تنبيه", "type": "main", "index": 0}]]
+    }
+  }
+}
